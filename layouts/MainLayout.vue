@@ -51,16 +51,17 @@
         </div>
         <div id="MainHeader" class="flex items-center w-full bg-white">
             <div class="flex lg:justify-start justify-between gap-10 max-w-[1150px] w-full px-3 py-5 mx-auto">
+                <!-- without client only it doesnt work. dunno why -->  
                 <ClientOnly>
                     <NuxtLink to="/" class="min-w-[170px]">
-                    <img 
-                        width="170"
-                        src="/AliExpress-logo.png"
-                    />
-                </NuxtLink>
+                        <img 
+                            width="170"
+                            src="/AliExpress-logo.png"
+                        />
+                    </NuxtLink>
                 </ClientOnly>
                 
-                <div class="max-w-[700px] w-full md-block sm-hidden">
+                <div class="max-w-[700px] w-full md:block hidden">
                     <div class="relative">
                         <div class="flex items-center border-2 border-[#FF4646] rounded-md">
                             <input type="text"
@@ -73,16 +74,51 @@
                                 <Icon name="ph:magnifying-glass" size="20" color="#ffffff"/>
                             </button>
                         </div>
+                        <div class="absolute bg-white max-w-[700px] h-auto w-full">
+                            <div class="p-1" v-if="false">
+                                <NuxtLink to="/item/1" class="flex items-center justify-between w-full cursor-pointer hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                       <img src="https://picsum.photos/id/82/300/300" width="50" alt="" class="rounded-md"> 
+                                       <div class="truncate ml-2">TESTING</div>
+                                       <div class="truncate">$ 19.99</div>
+                                    </div>
+                                </NuxtLink>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <ClientOnly>
+                    <NuxtLink to="/shoppingcart" class="flex items-center">
+                        <button class="relative md:block hidden" @mouseenter="isCartHover=true" @mouseleave="isCartHover=false">
+                            <span class="absolute flex items-center justify-center -right-[3px] top-0 bg-[#FF4646] h-[17px] text-xs text-white px-0.5 rounded-full">
+                                0
+                            </span>
+                            <div class="min-w-[40px]">
+                                <Icon name="ph:shopping-cart-simple-light" size="33" :color="isCartHover?'#FF4646' : ''" />
+                            </div>
+                        </button>
+                    </NuxtLink>
+                </ClientOnly>
+                <button @click="userStore.isMenuOverlay=true" class="md:hidden block rounded-full p-1.5 -mt-[4px] hover:bg-gray-100">
+                    <Icon name="radix-icons:hamburger-menu" size="33" />
+                </button>
             </div>
         </div>
     </div>
+
+    <Loading v-if="userStore.isLoading" />
+
+    <div class="lg:pt-[150px] md:pt-[130px] pt-[80px]" />
+    <slot />
+    <Footer v-if="!userStore.isLoading" />
 </template>
 
 <script setup>
+import {useUserStore} from '~/stores/user'
+const userStore = useUserStore()
 
 let isAccountMenu = ref(false)
+let isCartHover = ref(false)
 let searchItem = ref("")
 let isSearching = ref(false)
 </script>
