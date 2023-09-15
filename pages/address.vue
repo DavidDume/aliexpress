@@ -95,8 +95,9 @@ let isWorking = ref(false)
 let error = ref(null)
 
 watchEffect(async () => {
-    currentAddress = await useFetch(`/api/prisma/get-address-by-user/${user.value.id}`)
-    if(currentAddress.value.data) {
+    currentAddress.value = await useFetch(`/api/prisma/get-address-by-user/${user.value.id}`)
+
+    if (currentAddress.value.data) {
         contactName.value = currentAddress.value.data.name
         address.value = currentAddress.value.data.address
         zipCode.value = currentAddress.value.data.zipcode
@@ -105,11 +106,12 @@ watchEffect(async () => {
 
         isUpdate.value = true
     }
-    userStore.isLoading = false;
+
+    userStore.isLoading = false
 })
 
 const submit = async () => {
-    isWorking = true
+    isWorking.value = true
     error.value = null
 
     if (!contactName.value) {
@@ -140,10 +142,11 @@ const submit = async () => {
     }
 
     if (error.value) {
-        isWorking = false
+        isWorking.value = false
         return
     }
-    if(!isUpdate.value) {
+
+    if (isUpdate.value) {
         await useFetch(`/api/prisma/update-address/${currentAddress.value.data.id}`, {
             method: 'PATCH',
             body: {
@@ -154,11 +157,13 @@ const submit = async () => {
                 city: city.value,
                 country: country.value,
             }
-        }) 
+        })
+
         isWorking.value = false
 
-        return navigateTo('/checkout')    
+        return navigateTo('/checkout')
     }
+    
     await useFetch(`/api/prisma/add-address/`, {
         method: 'POST',
         body: {
@@ -175,5 +180,4 @@ const submit = async () => {
 
     return navigateTo('/checkout')
 }
-
 </script>

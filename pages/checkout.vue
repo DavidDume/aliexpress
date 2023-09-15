@@ -137,6 +137,7 @@
 </template>
 
 <script setup>
+import Stripe from 'stripe';
 import MainLayout from '~/layouts/MainLayout.vue';
 import { useUserStore } from '~/stores/user';
 const userStore = useUserStore()
@@ -186,11 +187,60 @@ watch(() => total.value, () => {
 })
 
 const stripeInit = async () => {
+    const runtimeConfig = useRuntimeConfig()
+    stripe = Stripe(runtimeConfig.stripePk)
 
+    let res = await $fetch('/api/stripe/paymentintent', {
+        method: 'POST',
+        body: {
+            amount: total.value
+        }
+    })
+
+    clientSecret = res.client_secret
+
+    elements = stripe.elements()
+    var style = {
+        base: {
+            fontSize: "18px"
+        },
+        invalid: {
+            fontFamily: 'Arial, sans-serif',
+            color: "#EE4B2B",
+            iconColor: "EE4B42B"
+        }
+    }
+
+    card = elements.create("card", {
+        hidePostalCode: true,
+        style: style
+    })
+
+    card.mount("#card-element")
+
+    card.on("change", function (event) {
+        document.querySelector("button").disabled = event.empty
+        document.querySelector("#card-error").textContent = event.error ? event.error.messsage : ""
+    })
+
+    isProcessing.value = false
 }
 
 const pay = async () => {
+    if(currentAddress.value && currentAddress.value.data == '') {
+        showError('Please add shipping address')
+        return
+    }
+    isProcessing.value = true
 
+    let result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {card: card}
+    })
+
+    if(result.error) {
+        showError(result.error.messsage)
+        isProcessing.value = false
+    }
 }
 
 const createOrder = async (stripeId) => {
